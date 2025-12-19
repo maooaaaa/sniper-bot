@@ -1,0 +1,37 @@
+name: Sniper Bot Cron
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # 5分おき
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 書き込み権限
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python main.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config --global user.name "SniperBot"
+          git config --global user.email "bot@example.com"
+          git add data.json
+          git commit -m "Update data" || exit 0
+          git push
